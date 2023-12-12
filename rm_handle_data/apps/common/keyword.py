@@ -53,6 +53,7 @@ AFFECTED_BY_AREA= "affected_by_area"
 AFFECTED_BY_MARKET_PLACE= "affected_by_market_place"
 TOTAL_WEIGHT = "total_weight"
 
+
 class KeywordHandler:
     """
     Xử lý từ khóa cho câu
@@ -452,8 +453,8 @@ class KeywordHandler:
         if subject_len > 0:
             weights[SUBJECT] = {
                 MASTER: {},
-                WEIGHT : 0,
-                IS_NEGATE : False,
+                WEIGHT: 0,
+                IS_NEGATE: False,
             }
             subject = subjects[0]
             subject_weight = subject[NEGATE_WEIGHT] if subject[IS_NEGATE] else subject[WEIGHT] 
@@ -555,7 +556,8 @@ class KeywordHandler:
                     valid_len += 1
             if valid_len > 0:
                 weight = weight / valid_len
-                weights[ref_dict][WEIGHT] = weight                                       
+                weights[ref_dict][WEIGHT] = weight
+                print("")
 
     def build_keyword_negate(self, keyword, weights, weight_queue):
         """ Kết trọng số từ khóa với tính phủ định """
@@ -611,24 +613,24 @@ class KeywordHandler:
         weight_queue.append(trend_affected_weight)
     
     def build_area_weight(self, keyword, weights, extra_weight_queue):
-        if weights[AREA] is None:
+        if weights.get(AREA) is None:
             return None
-        extra_weight_queue[AREA] = weights[AREA][WEIGHT]
-        keyword[AFFECTED_BY_AREA] = weights[AREA][WEIGHT]
+        extra_weight_queue[AREA] = weights['keyword'][WEIGHT]
+        keyword[AFFECTED_BY_AREA] = weights['keyword'][WEIGHT]
 
     def build_market_place_weight(self, keyword, weights, extra_weight_queue):
-        if weights[MARKET_PLACE] is None:
+        if weights.get(MARKET_PLACE) is None:
             return None
-        extra_weight_queue[MARKET_PLACE] = weights[MARKET_PLACE][WEIGHT]
-        keyword[AFFECTED_BY_MARKET_PLACE] = weights[MARKET_PLACE][WEIGHT] 
+        extra_weight_queue[MARKET_PLACE] = weights['keyword'][WEIGHT]
+        keyword[AFFECTED_BY_MARKET_PLACE] = weights['keyword'][WEIGHT] 
 
     def cal_keyword_weight(self, keyword, refs):
         """ Tính toán trọng số của 1 từ khóa """
         weights = {
             KEYWORD: {
                 MASTER: {},
-                WEIGHT : 0,
-                IS_NEGATE : False,
+                WEIGHT: 0,
+                IS_NEGATE: False,
             }
         }
 
@@ -638,22 +640,31 @@ class KeywordHandler:
         self.copy_properties(weights[KEYWORD][MASTER], keyword, [NAME, WEIGHT, NEGATE_WEIGHT, AFFECTED_BY_TREND, AFFECTED_BY_SUBJECT, AFFECTED_BY_ACTION, AFFECTED_BY_BOOSTER])
         self.copy_properties(weights[KEYWORD], keyword, [IS_NEGATE, NEGATE_BY, AFTER_NEGATE, BEFORE_PHRASE, AFTER_PHRASE, INDEX, END_INDEX, INDEXS])
         weights[KEYWORD][WEIGHT] = keyword_weight   
-        cals = [
-           self.cal_action_weight, 
-           self.cal_trend_weight, 
-           self.cal_subject_weight, 
-           self.cal_booster_weight, 
-           self.cal_coin_weight, 
-           self.cal_area_weight, 
-           self.cal_market_place_weight, 
-        ]
-        for cal in cals:
-            cal(refs, keyword, weights)
+        # cals = [
+        #    self.cal_action_weight, 
+        #    self.cal_trend_weight, 
+        #    self.cal_subject_weight, 
+        #    self.cal_booster_weight, 
+        #    self.cal_coin_weight, 
+        #    self.cal_area_weight, 
+        #    self.cal_market_place_weight, 
+        # ]
+        # for cal in cals:
+        #     cal(refs, keyword, weights)
+
+        self.cal_action_weight(refs, keyword, weights)
+        self.cal_trend_weight(refs, keyword, weights)
+        self.cal_subject_weight(refs, keyword, weights)
+        self.cal_booster_weight(refs, keyword, weights)
+        self.cal_coin_weight(refs, keyword, weights)
+        self.cal_area_weight(refs, keyword, weights)
+        self.cal_market_place_weight(refs, keyword, weights)
+        
         keyword, weights = self.build_keyword_weight(keyword, weights)
         return {
-            KEYWORD : keyword,
-            WEIGHT : keyword[WEIGHT],
-            WEIGHTS : weights
+            KEYWORD: keyword,
+            WEIGHT: keyword[WEIGHT],
+            WEIGHTS: weights
         }
     
     def build_keyword_weight(self, keyword, weights):
@@ -669,21 +680,29 @@ class KeywordHandler:
             AREA : 0.3,
             MARKET_PLACE : 0.3
         }
-        builds = [
-            self.build_keyword_negate,
-            self.build_subject_weight,
-            self.build_booster_weight,
-            self.build_trend_weight
-        ]
-        for build in builds:
-            build(keyword, weights, weight_queue)
+        # builds = [
+        #     self.build_keyword_negate,
+        #     self.build_subject_weight,
+        #     self.build_booster_weight,
+        #     self.build_trend_weight
+        # ]
+        # for build in builds:
+        #     build(keyword, weights, weight_queue)
 
-        builds_extra = [
-            self.build_area_weight,
-            self.build_market_place_weight,
-        ]
-        for build in builds_extra:
-            build(keyword, weights, extra_weight_queue)     
+        self.build_keyword_negate(keyword, weights, weight_queue)
+        self.build_subject_weight(keyword, weights, weight_queue)
+        self.build_booster_weight(keyword, weights, weight_queue)
+        self.build_trend_weight(keyword, weights, weight_queue)
+
+        # builds_extra = [
+        #     self.build_area_weight,
+        #     self.build_market_place_weight,
+        # ]
+        # for build in builds_extra:
+        #     build(keyword, weights, extra_weight_queue)
+
+        self.build_area_weight(keyword, weights, extra_weight_queue)
+        self.build_market_place_weight(keyword, weights, extra_weight_queue)
 
         keyword_weight = sum(weight_queue)
         keyword_weight = keyword_weight * (extra_weight_queue[AREA] + extra_weight_queue[MARKET_PLACE])
@@ -724,18 +743,17 @@ class KeywordHandler:
              
     def cal_sentence_weight(self, sentence):
         """
-        Tính toán trọng số của câu
+        Tính toán trọng số của câucal_sentence_weight
         """
-        sentence
         refs = {}
         keywords = self.get_keyword_keywords(sentence)
         refs[SUBJECT] = self.get_subject_keywords(sentence)
         refs[SENTENCE] = sentence
         keyword_len = len(keywords)
         result = {
-            SENTENCE : sentence,
-            KEYWORDS : [],
-            SENTENCE_WEIGHT : 0
+            SENTENCE: sentence,
+            KEYWORDS: [],
+            SENTENCE_WEIGHT: 0
         }
         if keyword_len == 0:
             return result
@@ -757,7 +775,7 @@ class KeywordHandler:
 
             result[SENTENCE_POSITIVE_WEIGHT] = round(positive_weight, 3)    
             result[SENTENCE_NEGATE_WEIGHT] = round(negative_weight, 3)
-            sentence_len = 2 if negative_weight != 0 and positive_weight !=0 else 1
+            sentence_len = 2 if negative_weight != 0 and positive_weight != 0 else 1
             result[SENTENCE_WEIGHT] = round((negative_weight + positive_weight) / sentence_len, 3)    
         return result
     
@@ -771,10 +789,10 @@ class KeywordHandler:
         # Split text dau vao thanh cac cau
         sentences = self.split_text_into_sentences(self.trim_end_sentence_symbols(text))
         result = {
-            SENTENCE_POSITIVE_WEIGHT : 0, # Diem tich cuc (diem +)
-            SENTENCE_NEGATE_WEIGHT : 0, # Diem tieu cuc (diem -)
-            SENTENCE_WEIGHT : 0, # trong so cua cau 
-            "items" : [] # Chi tiet tung cau
+            SENTENCE_POSITIVE_WEIGHT: 0, # Diem tich cuc (diem +)
+            SENTENCE_NEGATE_WEIGHT: 0, # Diem tieu cuc (diem -)
+            SENTENCE_WEIGHT: 0, # trong so cua cau 
+            "items": [] # Chi tiet tung cau
         }
         
         for sentence in sentences:

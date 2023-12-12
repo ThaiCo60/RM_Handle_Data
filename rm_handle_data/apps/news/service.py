@@ -9,6 +9,7 @@ from rest_framework import status
 from rm_handle_data.apps.news.query import NewsQuery
 from rm_handle_data.message import Message
 import threading
+from nltk.tokenize import RegexpTokenizer
 
 
 class ThreadServiceGetNews(threading.Thread):
@@ -17,25 +18,54 @@ class ThreadServiceGetNews(threading.Thread):
         self.thread_type = thread_type
         
     def run(self):
-        # Injection require object
-        common = Common()
-        news_query = NewsQuery()
-        cursor = connection.cursor()
+        try: 
+            # Injection require object
+            common = Common()
+            news_query = NewsQuery()
+            cursor = connection.cursor()
+            key_work_handle = KeywordHandler()
+            tokenizer = RegexpTokenizer(r'[^.?!]+')
+    
+            # Get news data
+            cursor.execute(news_query.get_all_news())
+            news = common.dictfetchall(cursor)
+    
+            for new in news:
+                news_title = new['title']
+                news_content = new['content'] 
+                
+                # Phân tách nội dung bài tin tức ra các câu nhỏ
+                title_sentences = list(map(str.strip, tokenizer.tokenize(news_title)))
+                content_sentences = list(map(str.strip, tokenizer.tokenize(news_content)))
+                
+                # # Đánh trọng số cho title
+                # for title_sentence in title_sentences:
+                #     item = key_work_handle.cal_sentence_weight(title_sentence)
+                #     sentence = item['sentence']
+                #     key_works = item['keywords']
+                #     sentence_weight = item['sentence_weight']
+                # 
+                #     if sentence_weight != 0:
+                #         # Lưu DB
+                #         cursor.execute(news_query.insert_news_sentences_weight(), [new['id'],
+                #             sentence, str(key_works), new['time'], sentence_weight, True])
 
-        # Get news data
-        cursor.execute(news_query.get_all_news())
-        news = common.dictfetchall(cursor)
-
-        for new in news:
-            news_title = ""
-            news_contents = ""
-            
-            # Phân tách nội dung bài tin tức ra các câu nhỏ
-            centences = [] 
-            
-            # Đánh trọng số cho từng câu
-            
-            # Insert DB 
+                # Đánh trọng số cho content
+                for content_sentence in content_sentences:
+                    if not content_sentence:
+                        break
+                    item = key_work_handle.(content_sentence)
+                    # sentence = item['sentence']
+                    # key_works = item['keywords']
+                    # sentence_weight = item['sentence_weight']
+                    # 
+                    # if sentence_weight != 0:
+                    #     # Lưu DB
+                    #     cursor.execute(news_query.insert_news_sentences_weight(), [new['id'],
+                    #         sentence, str(key_works), new['time'], sentence_weight, True])
+                            
+        except Exception as e:
+            print(e)
 
 
 class NewsService:

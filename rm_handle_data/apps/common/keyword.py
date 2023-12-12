@@ -571,15 +571,19 @@ class KeywordHandler:
 
     def build_subject_weight(self, keyword, weights, weight_queue):
         """ Kết trọng số từ khóa với <subject> """
-        affected = weights[KEYWORD][MASTER][AFFECTED_BY_SUBJECT] \
-            and weights[SUBJECT][MASTER] is not None and weights[SUBJECT][MASTER][NAME] != weights[KEYWORD][MASTER][NAME]
-    
-        if affected == False:
-            return None
+        try:
+            affected = weights[KEYWORD][MASTER][AFFECTED_BY_SUBJECT] \
+                and weights.get(SUBJECT) is not None and weights[SUBJECT][MASTER] is not None \
+               and weights[SUBJECT][MASTER][NAME] != weights[KEYWORD][MASTER][NAME]
         
-        subject_affected_weight = weights[KEYWORD][WEIGHT] * weights[SUBJECT][WEIGHT]
-        keyword[AFFECTED_BY_SUBJECT] = f"{subject_affected_weight} ==> keyword_weight({weights[KEYWORD][WEIGHT]}) * subject_weight({weights[SUBJECT][WEIGHT]})"
-        weight_queue.append(subject_affected_weight)
+            if affected == False:
+                return None
+            
+            subject_affected_weight = weights[KEYWORD][WEIGHT] * weights[SUBJECT][WEIGHT]
+            keyword[AFFECTED_BY_SUBJECT] = f"{subject_affected_weight} ==> keyword_weight({weights[KEYWORD][WEIGHT]}) * subject_weight({weights[SUBJECT][WEIGHT]})"
+            weight_queue.append(subject_affected_weight)
+        except Exception as e:
+            print(e)
 
     def build_booster_weight(self, keyword, weights, weight_queue):
         """ Kết trọng số từ khóa với <booster> """

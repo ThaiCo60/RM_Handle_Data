@@ -38,31 +38,61 @@ class ThreadServiceGetNews(threading.Thread):
                 title_sentences = list(map(str.strip, tokenizer.tokenize(news_title)))
                 content_sentences = list(map(str.strip, tokenizer.tokenize(news_content)))
                 
-                # # Đánh trọng số cho title
-                # for title_sentence in title_sentences:
-                #     item = key_work_handle.cal_sentence_weight(title_sentence)
-                #     sentence = item['sentence']
-                #     key_works = item['keywords']
-                #     sentence_weight = item['sentence_weight']
-                # 
-                #     if sentence_weight != 0:
-                #         # Lưu DB
-                #         cursor.execute(news_query.insert_news_sentences_weight(), [new['id'],
-                #             sentence, str(key_works), new['time'], sentence_weight, True])
+                # Đánh trọng số cho title
+                for title_sentence in title_sentences:
+                    if not title_sentence:
+                        break
+                    item = key_work_handle.cal_sentence_weight(title_sentence)
+                    sentence = item['sentence']
+                    key_works = item['keywords']
+                    sentence_weight = item['sentence_weight']
+                    
+                    coin_affect = "ALL"
+                    if "weights" in key_works:
+                        weights = key_works['weights']
+                        if "coin" in weights:
+                            coins = weights['coin']
+                            if len(coins) > 0:
+                                coin_affect_temp = ""
+                                for coin in coins:
+                                    # Xử lý để chỉ lấy coin theo bảng coins
+                                    coin_affect_temp += "" # TODO
+                                    
+                                if coin_affect_temp:
+                                    coin_affect = coin_affect_temp
+
+                    if sentence_weight != 0:
+                        # Lưu DB
+                        cursor.execute(news_query.insert_news_sentences_weight(), [new['id'],
+                            sentence, str(key_works), new['time'], sentence_weight, True, coin_affect])
 
                 # Đánh trọng số cho content
                 for content_sentence in content_sentences:
                     if not content_sentence:
                         break
-                    item = key_work_handle.(content_sentence)
-                    # sentence = item['sentence']
-                    # key_works = item['keywords']
-                    # sentence_weight = item['sentence_weight']
-                    # 
-                    # if sentence_weight != 0:
-                    #     # Lưu DB
-                    #     cursor.execute(news_query.insert_news_sentences_weight(), [new['id'],
-                    #         sentence, str(key_works), new['time'], sentence_weight, True])
+                    item = key_work_handle.cal_sentence_weight(content_sentence)
+                    sentence = item['sentence']
+                    key_works = item['keywords']
+                    sentence_weight = item['sentence_weight']
+
+                    coin_affect = "ALL"
+                    if "weights" in key_works:
+                        weights = key_works['weights']
+                        if "coin" in weights:
+                            coins = weights['coin']
+                            if len(coins) > 0:
+                                coin_affect_temp = ""
+                                for coin in coins:
+                                    # Xử lý để chỉ lấy coin theo bảng coins
+                                    coin_affect_temp += ""  # TODO
+
+                                if coin_affect_temp:
+                                    coin_affect = coin_affect_temp
+
+                    if sentence_weight != 0:
+                        # Lưu DB
+                        cursor.execute(news_query.insert_news_sentences_weight(), [new['id'],
+                            sentence, str(key_works), new['time'], sentence_weight, False, coin_affect])
                             
         except Exception as e:
             print(e)

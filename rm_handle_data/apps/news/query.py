@@ -24,7 +24,8 @@ class NewsQuery:
         :return:
         """
         result = """
-            insert into news_sentences_weight (news_id, sentence_content, key_words, time, weight, is_title) 
-            values (%s, %s, %s, %s, %s, %s) 
+            insert into news_sentences_weight (news_id, sentence_content, key_words, time, weight, 
+            is_title, coin_affect) 
+            values (%s, %s, %s, %s, %s, %s, %s) 
         """
         return result

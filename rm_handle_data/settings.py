@@ -37,7 +37,7 @@ INSTALLED_APPS = [
 ]
 
 CRONJOBS = [
-    ('0 0 * * *', 'rm_handle_data.apps.news.service.get_news_daily', ),
+    ('0 2 * * *', 'rm_handle_data.apps.news.cron.handle_news_data_daily', ),
 ]
 
 # Middle ware

@@ -13,7 +13,7 @@ class NewsQuery:
         result = """
             select t.id, t.title, t.meta_description, t.content, t.post_id, time 
             from news t 
-            where t.id not in (select news_id from news_sentences_weight )
+            where t.id not in (select distinct news_id from news_sentences_weight)
             order by t.`time` 
         """
         return result

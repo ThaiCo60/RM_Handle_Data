@@ -48,18 +48,21 @@ class ThreadServiceGetNews(threading.Thread):
                     sentence_weight = item['sentence_weight']
                     
                     coin_affect = "ALL"
-                    if "weights" in key_works:
-                        weights = key_works['weights']
-                        if "coin" in weights:
-                            coins = weights['coin']
-                            if len(coins) > 0:
-                                coin_affect_temp = ""
-                                for coin in coins:
-                                    # Xử lý để chỉ lấy coin theo bảng coins
-                                    coin_affect_temp += "" # TODO
-                                    
-                                if coin_affect_temp:
-                                    coin_affect = coin_affect_temp
+                    if len(key_works) > 0: 
+                        for key_work in key_works:
+                            if "weights" in key_work:
+                                weights = key_work['weights']
+                                if "coin" in weights:
+                                    coins = weights['coin']
+                                    if len(coins) > 0:
+                                        coin_affect_temp = ""
+                                        for coin in coins:
+                                            # Xử lý để chỉ lấy coin theo bảng coins
+                                            coin_affect_temp += coin['code'] + ","
+                                            
+                                        if coin_affect_temp:
+                                            coin_affect = coin_affect_temp[:-1]
+                                            coin_affect = common.remove_duplicate_coin_code(coin_affect.split(','))
 
                     if sentence_weight != 0:
                         # Lưu DB
@@ -76,18 +79,22 @@ class ThreadServiceGetNews(threading.Thread):
                     sentence_weight = item['sentence_weight']
 
                     coin_affect = "ALL"
-                    if "weights" in key_works:
-                        weights = key_works['weights']
-                        if "coin" in weights:
-                            coins = weights['coin']
-                            if len(coins) > 0:
-                                coin_affect_temp = ""
-                                for coin in coins:
-                                    # Xử lý để chỉ lấy coin theo bảng coins
-                                    coin_affect_temp += ""  # TODO
+                    if len(key_works) > 0:
+                        for key_work in key_works:
+                            if "weights" in key_work:
+                                weights = key_work['weights']
+                                if "coin" in weights:
+                                    coins = weights['coin']
+                                    if len(coins) > 0:
+                                        coin_affect_temp = ""
+                                        for coin in coins:
+                                            # Xử lý để chỉ lấy coin theo bảng coins
+                                            coin_affect_temp += coin['code'] + ","
 
-                                if coin_affect_temp:
-                                    coin_affect = coin_affect_temp
+                                        if coin_affect_temp:
+                                            coin_affect = coin_affect_temp[:-1]
+                                            coin_affect = common.remove_duplicate_coin_code(
+                                                coin_affect.split(','))
 
                     if sentence_weight != 0:
                         # Lưu DB
@@ -113,38 +120,6 @@ class NewsService:
         except Exception as e:
             print(e)
             response = Response(mess=str(e), status=status.HTTP_500_INTERNAL_SERVER_ERROR)
-
-        return response
-
-    def handle_data_news_daily(self):
-        """
-        Handle data news in the past
-        :return:
-        """
-        try:
-            inline_thread = ThreadServiceGetNews("daily")
-            inline_thread.start()
-
-            response = Response(data=None, mess=Message.SUCCESS, status=status.HTTP_200_OK)
-        except Exception as e:
-            print(e)
-            response = Response(mess=str(e), status=status.HTTP_500_INTERNAL_SERVER_ERROR)
-
-        return response   
-
-    def test_sentence_weight(self, args):
-        """
-        Test chức năng đánh trọng số câu
-        :return:
-        """
-        sentence = (
-            "Bitcoin tăng giá mạnh khiến các trader bán ra rất mạnh từ cơn sốt meme coin hồi tháng 5/2023, nhờ vào sự chuyển mình của làn sóng Bitcoin Ordinals và BRC-20."
-        )
-        content = args.get("content", sentence)
-        keywordHandler = KeywordHandler()
-        sentence_weight = keywordHandler.cal_text_weight(content)
-     
-        response = Response(data=sentence_weight, mess="OK", status=status.HTTP_200_OK)
 
         return response
 

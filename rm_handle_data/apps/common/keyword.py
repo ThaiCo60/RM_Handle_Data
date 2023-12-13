@@ -199,7 +199,10 @@ class KeywordHandler:
         Lấy tất cả từ khóa trong dict<coin>
         """
         dict = self.get_keywords_group(text, self.coin_dict)
-        return self.get_keywords_by(text, dict)
+        result = self.get_keywords_by(text, dict)
+        if len(result) > 0:
+            aa = result
+        return result
     
     def get_area_keywords(self, text):
         """
@@ -768,7 +771,9 @@ class KeywordHandler:
             for i in range(keyword_len):
                 cal_keyword_weight = self.cal_keyword_weight(keywords[i], refs)
                 keyword_item = {}
-                self.copy_properties(keyword_item, cal_keyword_weight[KEYWORD], [NAME, FULL_NAME, INDEX, END_INDEX, AFFECTED_BY_TREND, AFFECTED_BY_SUBJECT, AFFECTED_BY_BOOSTER, AFFECTED_BY_AREA, AFFECTED_BY_MARKET_PLACE,  TOTAL_WEIGHT])
+                self.copy_properties(keyword_item, cal_keyword_weight[KEYWORD], [NAME, FULL_NAME, 
+                    INDEX, END_INDEX, AFFECTED_BY_TREND, AFFECTED_BY_SUBJECT, AFFECTED_BY_BOOSTER, 
+                    AFFECTED_BY_AREA, AFFECTED_BY_MARKET_PLACE,  TOTAL_WEIGHT])
                 self.copy_properties(keyword_item, cal_keyword_weight, [WEIGHT, WEIGHTS])
                 
                 result[KEYWORDS].append(keyword_item)
